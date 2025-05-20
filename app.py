@@ -57,12 +57,14 @@ if advising_file:
 
     st.subheader("📋 Appointments by Advisor and Category")
     if 'Category' in df.columns:
-        advisor_category = pd.crosstab(df['Calendar'], df['Category'])
-        st.dataframe(advisor_category.copy(), use_container_width=True)
+        advisor_category = pd.crosstab(index=df['Calendar'], columns=df['Category']).copy()
+        advisor_category = advisor_category.loc[~advisor_category.index.duplicated(keep='first')]
+        st.dataframe(advisor_category, use_container_width=True)
 
     st.subheader("🧾 Monthly Load per Advisor")
-    advisor_month = pd.crosstab(df['Month'], df['Calendar'])
-    st.dataframe(advisor_month.copy(), use_container_width=True)
+    advisor_month = pd.crosstab(index=df['Month'], columns=df['Calendar']).copy()
+    advisor_month = advisor_month.loc[~advisor_month.index.duplicated(keep='first')]
+    st.dataframe(advisor_month, use_container_width=True)
 
     st.subheader("🔁 Frequency of Repeat Visits")
     repeat_freq = df['Student Number'].value_counts().value_counts().sort_index()
@@ -116,7 +118,9 @@ if workshop_file:
     st.bar_chart(major_counts)
 
     st.subheader("📊 Writing Stage vs Application Status")
-    stage_vs_applied = pd.crosstab(stage_series, dfw['Applied Before'])
+    stage_series_unique = stage_series.reset_index(drop=True)
+    applied_status = dfw.loc[stage_series_unique.index, 'Applied Before'].reset_index(drop=True)
+    stage_vs_applied = pd.crosstab(stage_series_unique, applied_status)
     st.dataframe(stage_vs_applied.copy(), use_container_width=True)
 
     st.subheader("⏳ Time Between Scheduling and Rescheduling")
