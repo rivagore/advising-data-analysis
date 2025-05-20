@@ -55,13 +55,15 @@ if advising_file:
 
     st.subheader("🔁 Repeat Visit Frequency")
     repeat_freq = df['Student Number'].value_counts().value_counts().sort_index()
-    st.bar_chart(repeat_freq)
+    repeat_freq_df = repeat_freq.rename_axis("Visits").reset_index(name="Student Count")
+    st.bar_chart(repeat_freq_df.set_index("Visits"))
 
     st.subheader("🧠 Most Common Words in Topics")
     if 'topic_clean' in df.columns:
         words = ' '.join(df['topic_clean'].dropna()).split()
         common_words = pd.Series(Counter(words)).value_counts().head(15)
-        st.bar_chart(common_words)
+        common_words_df = common_words.rename_axis("word").reset_index(name="frequency")
+        st.bar_chart(common_words_df.set_index("word"))
 
 if workshop_file:
     dfw = pd.read_csv(workshop_file)
@@ -70,7 +72,6 @@ if workshop_file:
     dfw['Writing Stage'] = dfw['Where in the writing process are you? '].str.lower().fillna('')
     dfw['Current Major'] = dfw['What is your current major?'].str.strip().str.title()
     dfw['Applied Before'] = dfw['Have you applied to the Allen School before? '].str.lower().str.strip()
-
 
     if show_data:
         st.subheader("📋 Workshop Data Preview")
@@ -108,7 +109,8 @@ if workshop_file:
     st.subheader("⏳ Lead Time for Rescheduling")
     dfw['Days Rescheduled'] = (dfw['Date Rescheduled'] - dfw['Date Scheduled']).dt.days
     lead_time_dist = dfw['Days Rescheduled'].dropna()
-    st.bar_chart(lead_time_dist.value_counts().sort_index())
+    lead_time_df = lead_time_dist.value_counts().sort_index().rename_axis("days").reset_index(name="count")
+    st.bar_chart(lead_time_df.set_index("days"))
 
 st.markdown("---")
 st.caption("Built with ❤️ using Streamlit")
