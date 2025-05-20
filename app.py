@@ -24,8 +24,10 @@ if advising_file:
     total_appointments = len(df)
     unique_students = df['Student Number'].nunique()
     repeat_students = df['Student Number'].value_counts().gt(1).sum()
-    appointments_by_calendar = df['Calendar'].value_counts()
-    type_counts = df['Type'].value_counts()
+    appointments_by_calendar = df['Calendar'].value_counts().reset_index()
+    appointments_by_calendar.columns = ['Calendar', 'Count']
+    type_counts = df['Type'].value_counts().reset_index()
+    type_counts.columns = ['Type', 'Count']
 
     col1, col2, col3 = st.columns(3)
     col1.metric("Total Appointments", total_appointments)
@@ -34,11 +36,20 @@ if advising_file:
 
     st.subheader("📆 Appointments by Month")
     df['Month'] = df['Date Scheduled'].dt.to_period('M').astype(str)
-    month_counts = df['Month'].value_counts().sort_index()
-    st.bar_chart(month_counts)
+    month_counts = df['Month'].value_counts().reset_index().sort_values('index')
+    month_counts.columns = ['Month', 'Count']
+    chart = alt.Chart(month_counts).mark_bar().encode(
+        x=alt.X('Month:N', sort=None, axis=alt.Axis(labelAngle=0)),
+        y='Count:Q'
+    ).properties(title='Appointments Scheduled per Month')
+    st.altair_chart(chart, use_container_width=True)
 
     st.subheader("📊 Appointment Type Breakdown")
-    st.bar_chart(type_counts)
+    type_chart = alt.Chart(type_counts).mark_bar().encode(
+        x=alt.X('Type:N', axis=alt.Axis(labelAngle=0)),
+        y='Count:Q'
+    ).properties(title='Appointment Type Counts')
+    st.altair_chart(type_chart, use_container_width=True)
 
     st.subheader("📑 Advisor vs Appointment Category")
     if 'Category' in df.columns:
@@ -75,12 +86,22 @@ if workshop_file:
 
     st.subheader("🧠 Writing Stage Breakdown")
     stage_series = dfw['Writing Stage'].str.split(',').explode().str.strip()
-    stage_counts = stage_series.value_counts()
-    st.bar_chart(stage_counts)
+    stage_counts = stage_series.value_counts().reset_index()
+    stage_counts.columns = ['Stage', 'Count']
+    stage_chart = alt.Chart(stage_counts).mark_bar().encode(
+        x=alt.X('Stage:N', axis=alt.Axis(labelAngle=0)),
+        y='Count:Q'
+    ).properties(title='Writing Stage Counts')
+    st.altair_chart(stage_chart, use_container_width=True)
 
     st.subheader("🎓 Major Distribution")
-    major_counts = dfw['Current Major'].value_counts()
-    st.bar_chart(major_counts)
+    major_counts = dfw['Current Major'].value_counts().reset_index()
+    major_counts.columns = ['Major', 'Count']
+    major_chart = alt.Chart(major_counts).mark_bar().encode(
+        x=alt.X('Major:N', axis=alt.Axis(labelAngle=0)),
+        y='Count:Q'
+    ).properties(title='Majors Attending Workshops')
+    st.altair_chart(major_chart, use_container_width=True)
 
 st.markdown("---")
 st.caption("Built with ❤️ using Streamlit")
