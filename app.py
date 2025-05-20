@@ -26,7 +26,7 @@ if advising_file:
     total_appointments = len(df)
     unique_students = df['Student Number'].nunique()
     repeat_students = df['Student Number'].value_counts().gt(1).sum()
-    appointments_by_calendar = df['Advisor'].value_counts()
+    appointments_by_calendar = df['Calendar'].value_counts()
     type_counts = df['Type'].value_counts()
 
     col1, col2, col3 = st.columns(3)
@@ -51,7 +51,7 @@ if advising_file:
 
     st.subheader("📑 Advisor vs Appointment Category")
     if 'Category' in df.columns:
-        advisor_category = pd.crosstab(df['Advisor'], df['Category'])
+        advisor_category = pd.crosstab(df['Calendar'], df['Category'])
         st.dataframe(advisor_category)
 
 if workshop_file:
