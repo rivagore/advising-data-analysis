@@ -118,10 +118,19 @@ if workshop_file:
     st.bar_chart(major_counts)
 
     st.subheader("📊 Writing Stage vs Application Status")
-    stage_series_unique = stage_series.reset_index(drop=True)
-    applied_status = dfw.loc[stage_series_unique.index, 'Applied Before'].reset_index(drop=True)
-    stage_vs_applied = pd.crosstab(stage_series_unique, applied_status)
+    # Rebuild exploded DataFrame properly
+    exploded_df = dfw[['Applied Before']].copy()
+    exploded_df['Writing Stage'] = dfw['Writing Stage']
+    exploded_df = exploded_df.dropna(subset=['Writing Stage'])
+
+    # Explode writing stage and reset index
+    exploded_df = exploded_df.assign(Writing_Stage=exploded_df['Writing Stage'].str.split(',')).explode('Writing_Stage')
+    exploded_df['Writing_Stage'] = exploded_df['Writing_Stage'].str.strip()
+
+    # Crosstab using cleaned data
+    stage_vs_applied = pd.crosstab(exploded_df['Writing_Stage'], exploded_df['Applied Before'])
     st.dataframe(stage_vs_applied.copy(), use_container_width=True)
+
 
     st.subheader("⏳ Time Between Scheduling and Rescheduling")
     dfw['Days Rescheduled'] = (dfw['Date Rescheduled'] - dfw['Date Scheduled']).dt.days
