@@ -58,7 +58,7 @@ if workshop_file:
     dfw = pd.read_csv(workshop_file)
     dfw['Date Scheduled'] = pd.to_datetime(dfw['Date Scheduled'], errors='coerce')
     dfw['Date Rescheduled'] = pd.to_datetime(dfw['Date Rescheduled'], errors='coerce')
-    dfw['Writing Stage'] = dfw['Writing Stage'].str.lower().fillna('')
+    dfw['Writing Stage'] = dfw['Where in the writing process are you? '].str.lower().fillna('')
     dfw['Current Major'] = dfw['Current Major'].str.strip().str.title()
     dfw['Applied Before'] = dfw['Applied Before'].str.lower().str.strip()
 
