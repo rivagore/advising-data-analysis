@@ -1,5 +1,6 @@
 import streamlit as st
 import pandas as pd
+from collections import Counter
 
 st.set_page_config(layout="wide")
 st.title("📊 Advising & Workshop Data Analysis Tool")
@@ -36,6 +37,10 @@ if advising_file:
     month_counts = df['Month'].value_counts().sort_index()
     st.bar_chart(month_counts)
 
+    st.subheader("⏰ Appointments by Hour of Day")
+    df['Hour'] = df['Date Scheduled'].dt.hour
+    st.bar_chart(df['Hour'].value_counts().sort_index())
+
     st.subheader("📊 Appointment Type Breakdown")
     st.bar_chart(type_counts)
 
@@ -44,6 +49,20 @@ if advising_file:
         advisor_category = pd.crosstab(df['Calendar'], df['Category'])
         st.dataframe(advisor_category)
 
+    st.subheader("📆 Advisor Appointments per Month")
+    advisor_month = pd.crosstab(df['Month'], df['Calendar'])
+    st.dataframe(advisor_month)
+
+    st.subheader("🔁 Repeat Visit Frequency")
+    repeat_freq = df['Student Number'].value_counts().value_counts().sort_index()
+    st.bar_chart(repeat_freq)
+
+    st.subheader("🧠 Most Common Words in Topics")
+    if 'topic_clean' in df.columns:
+        words = ' '.join(df['topic_clean'].dropna()).split()
+        common_words = pd.Series(Counter(words)).value_counts().head(15)
+        st.bar_chart(common_words)
+
 if workshop_file:
     dfw = pd.read_csv(workshop_file)
     dfw['Date Scheduled'] = pd.to_datetime(dfw['Date Scheduled'], errors='coerce')
@@ -51,6 +70,7 @@ if workshop_file:
     dfw['Writing Stage'] = dfw['Where in the writing process are you? '].str.lower().fillna('')
     dfw['Current Major'] = dfw['What is your current major?'].str.strip().str.title()
     dfw['Applied Before'] = dfw['Have you applied to the Allen School before? '].str.lower().str.strip()
+
 
     if show_data:
         st.subheader("📋 Workshop Data Preview")
@@ -80,6 +100,15 @@ if workshop_file:
     st.subheader("🎓 Major Distribution")
     major_counts = dfw['Current Major'].value_counts()
     st.bar_chart(major_counts)
+
+    st.subheader("📈 Writing Stage vs Application History")
+    stage_vs_applied = pd.crosstab(stage_series, dfw['Applied Before'])
+    st.dataframe(stage_vs_applied)
+
+    st.subheader("⏳ Lead Time for Rescheduling")
+    dfw['Days Rescheduled'] = (dfw['Date Rescheduled'] - dfw['Date Scheduled']).dt.days
+    lead_time_dist = dfw['Days Rescheduled'].dropna()
+    st.bar_chart(lead_time_dist.value_counts().sort_index())
 
 st.markdown("---")
 st.caption("Built with ❤️ using Streamlit")
