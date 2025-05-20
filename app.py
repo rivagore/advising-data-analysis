@@ -59,8 +59,8 @@ if workshop_file:
     dfw['Date Scheduled'] = pd.to_datetime(dfw['Date Scheduled'], errors='coerce')
     dfw['Date Rescheduled'] = pd.to_datetime(dfw['Date Rescheduled'], errors='coerce')
     dfw['Writing Stage'] = dfw['Where in the writing process are you? '].str.lower().fillna('')
-    dfw['Current Major'] = dfw['Current Major'].str.strip().str.title()
-    dfw['Applied Before'] = dfw['Applied Before'].str.lower().str.strip()
+    dfw['Current Major'] = dfw['What is your current major?'].str.strip().str.title()
+    dfw['Applied Before'] = dfw['Have you applied to the Allen School before? '].str.lower().str.strip()
 
     if show_data:
         st.subheader("📋 Workshop Data Preview")
