@@ -1,8 +1,6 @@
 import streamlit as st
 import pandas as pd
-import matplotlib.pyplot as plt
-import seaborn as sns
-from io import StringIO
+import altair as alt
 
 st.set_page_config(layout="wide")
 st.title("📊 Advising & Workshop Data Analysis Tool")
@@ -37,17 +35,10 @@ if advising_file:
     st.subheader("📆 Appointments by Month")
     df['Month'] = df['Date Scheduled'].dt.to_period('M').astype(str)
     month_counts = df['Month'].value_counts().sort_index()
-    fig, ax = plt.subplots()
-    month_counts.plot(kind='bar', ax=ax)
-    ax.set_title("Appointments Scheduled per Month")
-    ax.set_ylabel("Count")
-    st.pyplot(fig)
+    st.bar_chart(month_counts)
 
     st.subheader("📊 Appointment Type Breakdown")
-    fig2, ax2 = plt.subplots()
-    type_counts.plot(kind='bar', ax=ax2)
-    ax2.set_title("Appointment Type Counts")
-    st.pyplot(fig2)
+    st.bar_chart(type_counts)
 
     st.subheader("📑 Advisor vs Appointment Category")
     if 'Category' in df.columns:
@@ -85,17 +76,11 @@ if workshop_file:
     st.subheader("🧠 Writing Stage Breakdown")
     stage_series = dfw['Writing Stage'].str.split(',').explode().str.strip()
     stage_counts = stage_series.value_counts()
-    fig3, ax3 = plt.subplots()
-    stage_counts.plot(kind='bar', ax=ax3)
-    ax3.set_title("Writing Stage Counts")
-    st.pyplot(fig3)
+    st.bar_chart(stage_counts)
 
     st.subheader("🎓 Major Distribution")
     major_counts = dfw['Current Major'].value_counts()
-    fig4, ax4 = plt.subplots()
-    major_counts.plot(kind='bar', ax=ax4)
-    ax4.set_title("Majors Attending Workshops")
-    st.pyplot(fig4)
+    st.bar_chart(major_counts)
 
 st.markdown("---")
 st.caption("Built with ❤️ using Streamlit")
