@@ -26,6 +26,13 @@ if advising_file:
     df['Date Scheduled'] = pd.to_datetime(df['Date Scheduled'], format='%Y-%m-%d', errors='coerce')
     df['Full Name'] = df['First Name'].str.strip().str.lower() + ' ' + df['Last Name'].str.strip().str.lower()
 
+    # Filters
+    advisors = df['Calendar'].dropna().unique().tolist()
+    types = df['Type'].dropna().unique().tolist()
+    selected_advisors = st.sidebar.multiselect("Filter by Advisor", advisors, default=advisors)
+    selected_types = st.sidebar.multiselect("Filter by Appointment Type", types, default=types)
+    df = df[df['Calendar'].isin(selected_advisors) & df['Type'].isin(selected_types)]
+
     if show_data:
         with st.expander("📋 Preview Advising Data"):
             st.dataframe(df.head(), use_container_width=True)
@@ -118,19 +125,13 @@ if workshop_file:
     st.bar_chart(major_counts)
 
     st.subheader("📊 Writing Stage vs Application Status")
-    # Rebuild exploded DataFrame properly
     exploded_df = dfw[['Applied Before']].copy()
     exploded_df['Writing Stage'] = dfw['Writing Stage']
     exploded_df = exploded_df.dropna(subset=['Writing Stage'])
-
-    # Explode writing stage and reset index
     exploded_df = exploded_df.assign(Writing_Stage=exploded_df['Writing Stage'].str.split(',')).explode('Writing_Stage')
     exploded_df['Writing_Stage'] = exploded_df['Writing_Stage'].str.strip()
-
-    # Crosstab using cleaned data
     stage_vs_applied = pd.crosstab(exploded_df['Writing_Stage'], exploded_df['Applied Before'])
     st.dataframe(stage_vs_applied.copy(), use_container_width=True)
-
 
     st.subheader("⏳ Time Between Scheduling and Rescheduling")
     dfw['Days Rescheduled'] = (dfw['Date Rescheduled'] - dfw['Date Scheduled']).dt.days
