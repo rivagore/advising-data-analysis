@@ -1,6 +1,8 @@
 import streamlit as st
 import pandas as pd
-import altair as alt
+import matplotlib.pyplot as plt
+import seaborn as sns
+from io import StringIO
 
 st.set_page_config(layout="wide")
 st.title("📊 Advising & Workshop Data Analysis Tool")
@@ -24,10 +26,8 @@ if advising_file:
     total_appointments = len(df)
     unique_students = df['Student Number'].nunique()
     repeat_students = df['Student Number'].value_counts().gt(1).sum()
-    appointments_by_calendar = df['Calendar'].value_counts().reset_index()
-    appointments_by_calendar.columns = ['Calendar', 'Count']
-    type_counts = df['Type'].value_counts().reset_index()
-    type_counts.columns = ['Type', 'Count']
+    appointments_by_calendar = df['Calendar'].value_counts()
+    type_counts = df['Type'].value_counts()
 
     col1, col2, col3 = st.columns(3)
     col1.metric("Total Appointments", total_appointments)
@@ -36,20 +36,18 @@ if advising_file:
 
     st.subheader("📆 Appointments by Month")
     df['Month'] = df['Date Scheduled'].dt.to_period('M').astype(str)
-    month_counts = df['Month'].value_counts().reset_index().sort_values('index')
-    month_counts.columns = ['Month', 'Count']
-    chart = alt.Chart(month_counts).mark_bar().encode(
-        x=alt.X('Month:N', sort=None, axis=alt.Axis(labelAngle=0)),
-        y='Count:Q'
-    ).properties(title='Appointments Scheduled per Month')
-    st.altair_chart(chart, use_container_width=True)
+    month_counts = df['Month'].value_counts().sort_index()
+    fig, ax = plt.subplots()
+    month_counts.plot(kind='bar', ax=ax)
+    ax.set_title("Appointments Scheduled per Month")
+    ax.set_ylabel("Count")
+    st.pyplot(fig)
 
     st.subheader("📊 Appointment Type Breakdown")
-    type_chart = alt.Chart(type_counts).mark_bar().encode(
-        x=alt.X('Type:N', axis=alt.Axis(labelAngle=0)),
-        y='Count:Q'
-    ).properties(title='Appointment Type Counts')
-    st.altair_chart(type_chart, use_container_width=True)
+    fig2, ax2 = plt.subplots()
+    type_counts.plot(kind='bar', ax=ax2)
+    ax2.set_title("Appointment Type Counts")
+    st.pyplot(fig2)
 
     st.subheader("📑 Advisor vs Appointment Category")
     if 'Category' in df.columns:
@@ -61,8 +59,8 @@ if workshop_file:
     dfw['Date Scheduled'] = pd.to_datetime(dfw['Date Scheduled'], errors='coerce')
     dfw['Date Rescheduled'] = pd.to_datetime(dfw['Date Rescheduled'], errors='coerce')
     dfw['Writing Stage'] = dfw['Where in the writing process are you? '].str.lower().fillna('')
-    dfw['Current Major'] = dfw['What is your current major?'].str.strip().str.title()
-    dfw['Applied Before'] = dfw['Have you applied to the Allen School before? '].str.lower().str.strip()
+    dfw['Current Major'] = dfw['Have you applied to the Allen School before? '].str.strip().str.title()
+    dfw['Applied Before'] = dfw['What is your current major?'].str.lower().str.strip()
 
     if show_data:
         st.subheader("📋 Workshop Data Preview")
@@ -86,22 +84,18 @@ if workshop_file:
 
     st.subheader("🧠 Writing Stage Breakdown")
     stage_series = dfw['Writing Stage'].str.split(',').explode().str.strip()
-    stage_counts = stage_series.value_counts().reset_index()
-    stage_counts.columns = ['Stage', 'Count']
-    stage_chart = alt.Chart(stage_counts).mark_bar().encode(
-        x=alt.X('Stage:N', axis=alt.Axis(labelAngle=0)),
-        y='Count:Q'
-    ).properties(title='Writing Stage Counts')
-    st.altair_chart(stage_chart, use_container_width=True)
+    stage_counts = stage_series.value_counts()
+    fig3, ax3 = plt.subplots()
+    stage_counts.plot(kind='bar', ax=ax3)
+    ax3.set_title("Writing Stage Counts")
+    st.pyplot(fig3)
 
     st.subheader("🎓 Major Distribution")
-    major_counts = dfw['Current Major'].value_counts().reset_index()
-    major_counts.columns = ['Major', 'Count']
-    major_chart = alt.Chart(major_counts).mark_bar().encode(
-        x=alt.X('Major:N', axis=alt.Axis(labelAngle=0)),
-        y='Count:Q'
-    ).properties(title='Majors Attending Workshops')
-    st.altair_chart(major_chart, use_container_width=True)
+    major_counts = dfw['Current Major'].value_counts()
+    fig4, ax4 = plt.subplots()
+    major_counts.plot(kind='bar', ax=ax4)
+    ax4.set_title("Majors Attending Workshops")
+    st.pyplot(fig4)
 
 st.markdown("---")
 st.caption("Built with ❤️ using Streamlit")
