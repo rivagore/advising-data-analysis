@@ -23,7 +23,7 @@ st.markdown("""
 if advising_file:
     st.markdown("### 🗂 Advising Data Analysis")
     df = pd.read_csv(advising_file)
-    df['Date Scheduled'] = pd.to_datetime(df['Date Scheduled'], errors='coerce')
+    df['Date Scheduled'] = pd.to_datetime(df['Date Scheduled'], format='%Y-%m-%d', errors='coerce')
     df['Full Name'] = df['First Name'].str.strip().str.lower() + ' ' + df['Last Name'].str.strip().str.lower()
 
     if show_data:
@@ -58,11 +58,11 @@ if advising_file:
     st.subheader("📋 Appointments by Advisor and Category")
     if 'Category' in df.columns:
         advisor_category = pd.crosstab(df['Calendar'], df['Category'])
-        st.dataframe(advisor_category, use_container_width=True)
+        st.dataframe(advisor_category.copy(), use_container_width=True)
 
     st.subheader("🧾 Monthly Load per Advisor")
     advisor_month = pd.crosstab(df['Month'], df['Calendar'])
-    st.dataframe(advisor_month, use_container_width=True)
+    st.dataframe(advisor_month.copy(), use_container_width=True)
 
     st.subheader("🔁 Frequency of Repeat Visits")
     repeat_freq = df['Student Number'].value_counts().value_counts().sort_index()
@@ -79,8 +79,8 @@ if advising_file:
 if workshop_file:
     st.markdown("### 🧾 Workshop Data Analysis")
     dfw = pd.read_csv(workshop_file)
-    dfw['Date Scheduled'] = pd.to_datetime(dfw['Date Scheduled'], errors='coerce')
-    dfw['Date Rescheduled'] = pd.to_datetime(dfw['Date Rescheduled'], errors='coerce')
+    dfw['Date Scheduled'] = pd.to_datetime(dfw['Date Scheduled'], format='%Y-%m-%d', errors='coerce')
+    dfw['Date Rescheduled'] = pd.to_datetime(dfw['Date Rescheduled'], format='%Y-%m-%d', errors='coerce')
     dfw['Writing Stage'] = dfw['Where in the writing process are you? '].str.lower().fillna('')
     dfw['Current Major'] = dfw['What is your current major?'].str.strip().str.title()
     dfw['Applied Before'] = dfw['Have you applied to the Allen School before? '].str.lower().str.strip()
@@ -117,7 +117,7 @@ if workshop_file:
 
     st.subheader("📊 Writing Stage vs Application Status")
     stage_vs_applied = pd.crosstab(stage_series, dfw['Applied Before'])
-    st.dataframe(stage_vs_applied, use_container_width=True)
+    st.dataframe(stage_vs_applied.copy(), use_container_width=True)
 
     st.subheader("⏳ Time Between Scheduling and Rescheduling")
     dfw['Days Rescheduled'] = (dfw['Date Rescheduled'] - dfw['Date Scheduled']).dt.days
