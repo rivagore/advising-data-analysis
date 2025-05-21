@@ -41,6 +41,34 @@ if advising_file:
 
     df = df[df['Calendar'].isin(selected_advisors) & df['Type'].isin(selected_types)]
 
+    df['topic_clean'] = (
+        df['What would you like to talk about?']
+        .str.lower()
+        .str.replace(r'[^\w\s]', ' ', regex=True)   # strip punctuation
+        .str.replace(r'\s+', ' ', regex=True)       # collapse whitespace
+        .str.strip()
+    )
+
+    category_keywords = {
+        "Internships":            ["internship", "internships", "practical experience", "recruitment"],
+        "Applications / Essays":  ["essay", "application", "apply", "personal statement", "application review"],
+        "Course Planning":        ["course", "registration", "class", "winter", "spring", "plan", "planning"],
+        "Resume / Career":        ["resume", "career", "job", "fair", "job searching"],
+        "Research":               ["research", "undergraduate research", "lab", "390r", "a i m s"],
+        "Admissions":             ["admission", "transfer", "undeclared", "paul allen", "allen school"],
+    }
+
+    def categorize(text):
+        if pd.isna(text):
+            return "Other"
+        for cat, kws in category_keywords.items():
+            for kw in kws:
+                if kw in text:
+                    return cat
+        return "Other"
+    
+    df['Category'] = df['topic_clean'].apply(categorize)
+
     if show_data:
         with st.expander("📋 Preview Advising Data"):
             st.dataframe(df.head(), use_container_width=True)
