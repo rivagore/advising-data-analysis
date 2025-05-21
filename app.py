@@ -27,6 +27,7 @@ import matplotlib
 matplotlib.use('Agg')
 
 if advising_file:
+    st.markdown("## 📁 Advising Data Overview")
     st.markdown("### 🗂 Advising Data Analysis")
     df = pd.read_csv(advising_file)
     df['Date Scheduled'] = pd.to_datetime(df['Date Scheduled'], errors='coerce')
@@ -41,45 +42,18 @@ if advising_file:
 
     df = df[df['Calendar'].isin(selected_advisors) & df['Type'].isin(selected_types)]
 
-    df['topic_clean'] = (
-        df['What would you like to talk about?']
-        .str.lower()
-        .str.replace(r'[^\w\s]', ' ', regex=True)   # strip punctuation
-        .str.replace(r'\s+', ' ', regex=True)       # collapse whitespace
-        .str.strip()
-    )
-
-    category_keywords = {
-        "Internships":            ["internship", "internships", "practical experience", "recruitment"],
-        "Applications / Essays":  ["essay", "application", "apply", "personal statement", "application review"],
-        "Course Planning":        ["course", "registration", "class", "winter", "spring", "plan", "planning"],
-        "Resume / Career":        ["resume", "career", "job", "fair", "job searching"],
-        "Research":               ["research", "undergraduate research", "lab", "390r", "a i m s"],
-        "Admissions":             ["admission", "transfer", "undeclared", "paul allen", "allen school"],
-    }
-
-    def categorize(text):
-        if pd.isna(text):
-            return "Other"
-        for cat, kws in category_keywords.items():
-            for kw in kws:
-                if kw in text:
-                    return cat
-        return "Other"
-    
-    df['Category'] = df['topic_clean'].apply(categorize)
-
     if show_data:
         with st.expander("📋 Preview Advising Data"):
             st.dataframe(df.head(), use_container_width=True)
 
-    st.subheader("🔢 Summary Metrics")
+    st.markdown("### 📊 General Appointment Stats")
 
     st.subheader("🗓️ Appointments by Day of Week")
     df['Weekday'] = df['Date Scheduled'].dt.day_name()
     weekday_counts = df['Weekday'].value_counts().reindex(['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'])
     st.bar_chart(weekday_counts)
 
+    st.markdown("### 📆 Advisor Activity Overview")
     st.subheader("🧾 Monthly Load per Advisor")
     df['Month'] = df['Date Scheduled'].dt.strftime('%B %Y')
     advisor_month = pd.crosstab(index=df['Month'], columns=df['Calendar']).copy()
@@ -100,7 +74,8 @@ if advising_file:
     st.dataframe(grouped, use_container_width=True)
 
     if 'topic_clean' in df.columns:
-        st.subheader("🌥 Topic Word Cloud")
+        st.markdown("### 🗣 Topic Content Insights")
+    st.subheader("🌥 Topic Word Cloud")
         text = ' '.join(df['topic_clean'].dropna())
         wordcloud = WordCloud(width=800, height=400, background_color='white').generate(text)
         fig, ax = plt.subplots(figsize=(10, 5))
@@ -108,6 +83,7 @@ if advising_file:
         ax.axis('off')
         st.pyplot(fig)
 
+    st.markdown("### 🔁 Repeat Visit Metrics")
     st.subheader("⏱️ Average Time Between Repeat Visits")
     repeat_df = df[df['Student Number'].duplicated(keep=False)]
     gaps = repeat_df.groupby('Student Number')['Date Scheduled'].agg(['min', 'max'])
@@ -158,11 +134,16 @@ if advising_file:
     st.bar_chart(repeat_freq_df.set_index("Visits"))
 
     st.subheader("🧠 Most Frequent Words in Topics")
-    if 'topic_clean' in df.columns:
-        words = ' '.join(df['topic_clean'].dropna()).split()
-        common_words = pd.Series(Counter(words)).value_counts().head(15)
-        common_words_df = common_words.rename_axis("word").reset_index(name="frequency")
-        st.bar_chart(common_words_df.set_index("word"))
+if 'topic_clean' in df.columns:
+    words = ' '.join(df['topic_clean'].dropna()).split()
+    common_words = pd.Series(Counter(words)).value_counts().head(15)
+    common_words_df = common_words.rename_axis("word").reset_index(name="frequency")
+    st.dataframe(common_words_df, use_container_width=True)
+
+    fig, ax = plt.subplots(figsize=(10, 5))
+    sns.barplot(data=common_words_df, y="word", x="frequency", ax=ax, palette="Purples_d")
+    ax.set_title("Top 15 Words in Topics")
+    st.pyplot(fig)
 
     st.subheader("📅 New vs Returning Students by Advisor")
     df['is_repeat'] = df.duplicated(subset='Student Number', keep=False)
@@ -193,6 +174,7 @@ if advising_file:
         st.bar_chart(common_words_df.set_index("word"))
 
 if workshop_file:
+    st.markdown("## 🧾 Workshop Data Overview")
     st.markdown("### 🧾 Workshop Data Analysis")
     dfw = pd.read_csv(workshop_file)
     dfw['Date Scheduled'] = pd.to_datetime(dfw['Date Scheduled'], format='%Y-%m-%d', errors='coerce')
@@ -205,7 +187,7 @@ if workshop_file:
         with st.expander("📋 Preview Workshop Data"):
             st.dataframe(dfw.head(), use_container_width=True)
 
-    st.subheader("🔢 Workshop Summary")
+    st.markdown("### 📊 Workshop Summary Stats")
     total_w_appointments = len(dfw)
     unique_majors = dfw['Current Major'].nunique()
     rescheduled = dfw['Date Rescheduled'].notnull().sum()
@@ -222,6 +204,7 @@ if workshop_file:
     col5.metric("Not Applied Before", applied_no)
 
     st.markdown("---")
+    st.markdown("### ✍️ Essay Progress and Support")
     st.subheader("📚 Writing Stage Breakdown")
 
     st.subheader("🔻 Writing Stage Funnel")
@@ -236,10 +219,12 @@ if workshop_file:
     stage_counts = stage_series.value_counts()
     st.bar_chart(stage_counts)
 
+    st.markdown("### 🎓 Student Academic Backgrounds")
     st.subheader("🎓 Major Representation")
     major_counts = dfw['Current Major'].value_counts()
     st.bar_chart(major_counts)
 
+    st.markdown("### 📝 Writing Stage vs. Allen School Application")
     st.subheader("📊 Writing Stage vs Application Status")
     exploded_df = dfw[['Applied Before']].copy()
     exploded_df['Writing Stage'] = dfw['Writing Stage']
@@ -249,6 +234,7 @@ if workshop_file:
     stage_vs_applied = pd.crosstab(exploded_df['Writing_Stage'], exploded_df['Applied Before'])
     st.dataframe(stage_vs_applied.copy(), use_container_width=True)
 
+    st.markdown("### 📆 Rescheduling Behavior")
     st.subheader("⏳ Time Between Scheduling and Rescheduling")
     dfw['Days Rescheduled'] = (dfw['Date Rescheduled'] - dfw['Date Scheduled']).dt.days
     lead_time_dist = dfw['Days Rescheduled'].dropna()
