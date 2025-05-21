@@ -227,6 +227,7 @@ if workshop_file:
     st.subheader("📚 Writing Stage Breakdown")
 
     st.subheader("🔻 Writing Stage Funnel")
+    stage_series = dfw['Writing Stage'].str.split(',').explode().str.strip()
     funnel_counts = stage_series.value_counts().reindex([
         'i am just getting started',
         'i have brainstormed but not yet drafted',
@@ -234,7 +235,6 @@ if workshop_file:
         'i am nearly done'
     ]).fillna(0)
     st.bar_chart(funnel_counts)
-    stage_series = dfw['Writing Stage'].str.split(',').explode().str.strip()
     stage_counts = stage_series.value_counts()
     st.bar_chart(stage_counts)
 
