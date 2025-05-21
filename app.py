@@ -27,11 +27,13 @@ if advising_file:
     df['Full Name'] = df['First Name'].str.strip().str.lower() + ' ' + df['Last Name'].str.strip().str.lower()
 
     # Filters
+    advisors = df['Calendar'].dropna().unique().tolist()
+    types = df['Type'].dropna().unique().tolist()
     with st.expander("🔍 Filter Options"):
         selected_advisors = st.multiselect("Filter by Advisor", advisors, default=advisors)
         selected_types = st.multiselect("Filter by Appointment Type", types, default=types)
 
-    df = df[df['Calendar'].isin(selected_advisors) & df['Type'].isin(selected_types)].isin(selected_advisors) & df['Type'].isin(selected_types)
+    df = df[df['Calendar'].isin(selected_advisors) & df['Type'].isin(selected_types)]
 
     if show_data:
         with st.expander("📋 Preview Advising Data"):
