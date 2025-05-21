@@ -23,10 +23,6 @@ st.markdown("""
 if advising_file:
     st.markdown("### 🗂 Advising Data Analysis")
     df = pd.read_csv(advising_file)
-    st.write("🕵️ Raw 'Date Scheduled' Values")
-    st.write(df['Date Scheduled'].head(10))
-    df['Date Scheduled'] = pd.to_datetime(df['Date Scheduled'], errors='coerce')
-    st.write(f"✅ Valid Dates Parsed: {df['Date Scheduled'].notna().sum()} / {len(df)}")
     df['Full Name'] = df['First Name'].str.strip().str.lower() + ' ' + df['Last Name'].str.strip().str.lower()
 
     # Filters
@@ -57,7 +53,7 @@ if advising_file:
     st.markdown("---")
     st.subheader("📆 Appointments Over Time")
     if not df['Date Scheduled'].isna().all():
-        df['Month'] = df['Date Scheduled'].dt.to_period('M').astype(str)
+        df['Month'] = df['Date Scheduled'].dt.strftime('%B %Y')
         month_counts = df['Month'].value_counts().sort_index()
         st.bar_chart(month_counts)
     else:
