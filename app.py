@@ -1,6 +1,12 @@
 import streamlit as st
 import pandas as pd
+import nltk
+
 from collections import Counter
+from nltk.corpus import stopwords
+
+nltk.download('stopwords')
+default_stopwords = set(stopwords.words('english'))
 
 st.set_page_config(layout="wide", page_title="Advising & Workshop Dashboard")
 st.title("📊 Advising & Workshop Data Analysis Tool")
@@ -152,12 +158,19 @@ if advising_file:
     st.bar_chart(repeat_freq_df.set_index("Visits"))
 
     st.subheader("🧠 Most Frequent Words in Topics")
+    custom_stopwords = default_stopwords.union({
+        'course', 'courses', 'planning', 'plan', 'class', 'classes', 'quarter',
+        'graduation', 'minor', 'major', 'school', 'year', 'i', 'my', 'in', 'to',
+        'for', 'and', 'the', 'a', 'about'
+    })
+
     if 'topic_clean' in df.columns:
         words = ' '.join(df['topic_clean'].dropna()).split()
-        common_words = pd.Series(Counter(words)).sort_values(ascending=False).head(15)
+        filtered_words = [w for w in words if w not in custom_stopwords and len(w) > 2]
+        common_words = pd.Series(Counter(filtered_words)).sort_values(ascending=False).head(15)
         common_words_df = common_words.rename_axis("word").reset_index(name="frequency")
         st.dataframe(common_words_df, use_container_width=True)
-        st.bar_chart(data=common_words_df, x="word", y="frequency")
+        st.bar_chart(data=common_words_df.set_index("word"))
 
     st.subheader("📅 New vs Returning Students by Advisor")
     df['is_repeat'] = df.duplicated(subset='Student Number', keep=False)
