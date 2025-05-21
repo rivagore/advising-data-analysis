@@ -23,6 +23,7 @@ st.markdown("""
 if advising_file:
     st.markdown("### 🗂 Advising Data Analysis")
     df = pd.read_csv(advising_file)
+    df['Date Scheduled'] = pd.to_datetime(df['Date Scheduled'], errors='coerce')
     df['Full Name'] = df['First Name'].str.strip().str.lower() + ' ' + df['Last Name'].str.strip().str.lower()
 
     # Filters
