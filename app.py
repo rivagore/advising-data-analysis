@@ -154,7 +154,7 @@ if advising_file:
     st.subheader("🧠 Most Frequent Words in Topics")
     if 'topic_clean' in df.columns:
         words = ' '.join(df['topic_clean'].dropna()).split()
-        common_words = pd.Series(Counter(words)).value_counts().head(15)
+        common_words = pd.Series(Counter(words)).sort_values(ascending=False).head(15)
         common_words_df = common_words.rename_axis("word").reset_index(name="frequency")
         st.dataframe(common_words_df, use_container_width=True)
         st.bar_chart(data=common_words_df, x="word", y="frequency")
