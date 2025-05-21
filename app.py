@@ -53,6 +53,7 @@ if advising_file:
     st.bar_chart(weekday_counts)
 
     st.subheader("📆 Advisor Monthly Heatmap")
+    df['Month'] = df['Date Scheduled'].dt.strftime('%B %Y')
     heatmap_data = pd.crosstab(df['Month'], df['Calendar'])
     fig, ax = plt.subplots(figsize=(10, 6))
     sns.heatmap(heatmap_data, cmap="Purples", annot=True, fmt="d", linewidths=0.5, ax=ax)
