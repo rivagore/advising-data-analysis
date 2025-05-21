@@ -28,18 +28,15 @@ st.markdown("""
 
 st.markdown("""
     <style>
-        div[data-baseweb="select"] > div {
-            background-color: rgba(138, 43, 226, 0.1);
-        }
-        div[data-baseweb="select"] > div:hover {
-            background-color: rgba(138, 43, 226, 0.2);
-        }
-        div[data-baseweb="select"] span {
-            color: #4B0082;
-            font-weight: bold;
+        /* Target selected option 'tags' inside the multiselect dropdown */
+        div[data-baseweb="select"] span[data-baseweb="tag"] {
+            background-color: rgba(138, 43, 226, 0.2) !important;
+            color: #4B0082 !important;
+            font-weight: 600;
         }
     </style>
 """, unsafe_allow_html=True)
+
 
 
 from wordcloud import WordCloud
@@ -94,7 +91,7 @@ if advising_file:
     df['Category'] = df['topic_clean'].apply(categorize)
 
     st.markdown("### 🗂 Advising Data Analysis")
-    
+
     if show_data:
         with st.expander("📋 Preview Advising Data"):
             st.dataframe(df.head(), use_container_width=True)
