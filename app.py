@@ -60,6 +60,7 @@ if advising_file:
     else:
         st.warning("No valid dates found after filtering. Please adjust filters or check data.")
 
+        
     st.subheader("📋 Appointments by Advisor and Category")
     if 'Category' in df.columns:
         advisor_category = pd.crosstab(index=df['Calendar'], columns=df['Category']).copy()
@@ -71,7 +72,7 @@ if advising_file:
     advisor_month = advisor_month.loc[~advisor_month.index.duplicated(keep='first')]
 
     # Highlight max value in each column
-    styled = advisor_month.style.highlight_max(axis=0, props="background-color: #ffe599; font-weight: bold;")
+    styled = advisor_month.style.highlight_max(axis=0, props="background-color: rgba(138, 43, 226, 0.2); font-weight: bold;")
     st.dataframe(styled, use_container_width=True, hide_index=False)
 
     st.subheader("🔁 Frequency of Repeat Visits")
@@ -79,6 +80,7 @@ if advising_file:
     repeat_freq_df = repeat_freq.rename_axis("Visits").reset_index(name="Student Count")
     st.bar_chart(repeat_freq_df.set_index("Visits"))
 
+    
     st.subheader("🧠 Most Frequent Words in Topics")
     if 'topic_clean' in df.columns:
         words = ' '.join(df['topic_clean'].dropna()).split()
