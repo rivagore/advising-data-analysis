@@ -26,6 +26,22 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
+st.markdown("""
+    <style>
+        div[data-baseweb="select"] > div {
+            background-color: rgba(138, 43, 226, 0.1);
+        }
+        div[data-baseweb="select"] > div:hover {
+            background-color: rgba(138, 43, 226, 0.2);
+        }
+        div[data-baseweb="select"] span {
+            color: #4B0082;
+            font-weight: bold;
+        }
+    </style>
+""", unsafe_allow_html=True)
+
+
 from wordcloud import WordCloud
 import matplotlib.pyplot as plt
 import seaborn as sns
@@ -34,10 +50,6 @@ matplotlib.use('Agg')
 
 if advising_file:
     st.markdown("## 📁 Advising Data Overview")
-    st.markdown("### 🗂 Advising Data Analysis")
-    df = pd.read_csv(advising_file)
-    df['Date Scheduled'] = pd.to_datetime(df['Date Scheduled'], errors='coerce')
-    df['Full Name'] = df['First Name'].str.strip().str.lower() + ' ' + df['Last Name'].str.strip().str.lower()
 
     # Filters
     advisors = df['Calendar'].dropna().unique().tolist()
@@ -45,6 +57,11 @@ if advising_file:
     with st.expander("🔍 Filter Options"):
         selected_advisors = st.multiselect("Filter by Advisor", advisors, default=advisors)
         selected_types = st.multiselect("Filter by Appointment Type", types, default=types)
+
+    st.markdown("### 🗂 Advising Data Analysis")
+    df = pd.read_csv(advising_file)
+    df['Date Scheduled'] = pd.to_datetime(df['Date Scheduled'], errors='coerce')
+    df['Full Name'] = df['First Name'].str.strip().str.lower() + ' ' + df['Last Name'].str.strip().str.lower()
 
     df = df[df['Calendar'].isin(selected_advisors) & df['Type'].isin(selected_types)]
 
