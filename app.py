@@ -52,12 +52,12 @@ if advising_file:
     weekday_counts = df['Weekday'].value_counts().reindex(['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'])
     st.bar_chart(weekday_counts)
 
-    st.subheader("📆 Advisor Monthly Heatmap")
+    st.subheader("🧾 Monthly Load per Advisor")
     df['Month'] = df['Date Scheduled'].dt.strftime('%B %Y')
-    heatmap_data = pd.crosstab(df['Month'], df['Calendar'])
-    fig, ax = plt.subplots(figsize=(10, 6))
-    sns.heatmap(heatmap_data, cmap="Purples", annot=True, fmt="d", linewidths=0.5, ax=ax)
-    st.pyplot(fig)
+    advisor_month = pd.crosstab(index=df['Month'], columns=df['Calendar']).copy()
+    advisor_month = advisor_month.loc[~advisor_month.index.duplicated(keep='first')]
+    styled = advisor_month.style.highlight_max(axis=0, props="background-color: rgba(138, 43, 226, 0.2); font-weight: bold;")
+    st.dataframe(styled, use_container_width=True, hide_index=False)
 
     st.subheader("🧑‍🎓 Repeat Visitors Timeline")
     timeline_df = df.copy()
@@ -71,13 +71,14 @@ if advising_file:
     grouped = df.groupby(['Calendar', 'Repeat Status']).size().unstack(fill_value=0)
     st.dataframe(grouped, use_container_width=True)
 
-    st.subheader("🌥 Topic Word Cloud")
-    text = ' '.join(df['topic_clean'].dropna())
-    wordcloud = WordCloud(width=800, height=400, background_color='white').generate(text)
-    fig, ax = plt.subplots(figsize=(10, 5))
-    ax.imshow(wordcloud, interpolation='bilinear')
-    ax.axis('off')
-    st.pyplot(fig)
+    if 'topic_clean' in df.columns:
+        st.subheader("🌥 Topic Word Cloud")
+        text = ' '.join(df['topic_clean'].dropna())
+        wordcloud = WordCloud(width=800, height=400, background_color='white').generate(text)
+        fig, ax = plt.subplots(figsize=(10, 5))
+        ax.imshow(wordcloud, interpolation='bilinear')
+        ax.axis('off')
+        st.pyplot(fig)
 
     st.subheader("⏱️ Average Time Between Repeat Visits")
     repeat_df = df[df['Student Number'].duplicated(keep=False)]
