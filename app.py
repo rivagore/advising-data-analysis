@@ -23,7 +23,10 @@ st.markdown("""
 if advising_file:
     st.markdown("### 🗂 Advising Data Analysis")
     df = pd.read_csv(advising_file)
-    df['Date Scheduled'] = pd.to_datetime(df['Date Scheduled'], format='%Y-%m-%d', errors='coerce')
+    st.write("🕵️ Raw 'Date Scheduled' Values")
+    st.write(df['Date Scheduled'].head(10))
+    df['Date Scheduled'] = pd.to_datetime(df['Date Scheduled'], errors='coerce')
+    st.write(f"✅ Valid Dates Parsed: {df['Date Scheduled'].notna().sum()} / {len(df)}")
     df['Full Name'] = df['First Name'].str.strip().str.lower() + ' ' + df['Last Name'].str.strip().str.lower()
 
     # Filters
