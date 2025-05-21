@@ -76,7 +76,10 @@ if advising_file:
     st.subheader("🧾 Monthly Load per Advisor")
     advisor_month = pd.crosstab(index=df['Month'], columns=df['Calendar']).copy()
     advisor_month = advisor_month.loc[~advisor_month.index.duplicated(keep='first')]
-    st.dataframe(advisor_month, use_container_width=True)
+
+    # Highlight max value in each column
+    styled = advisor_month.style.highlight_max(axis=0, props="background-color: #ffe599; font-weight: bold;")
+    st.dataframe(styled, use_container_width=True, hide_index=False)
 
     st.subheader("🔁 Frequency of Repeat Visits")
     repeat_freq = df['Student Number'].value_counts().value_counts().sort_index()
