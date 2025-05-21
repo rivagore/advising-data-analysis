@@ -27,11 +27,11 @@ if advising_file:
     df['Full Name'] = df['First Name'].str.strip().str.lower() + ' ' + df['Last Name'].str.strip().str.lower()
 
     # Filters
-    advisors = df['Calendar'].dropna().unique().tolist()
-    types = df['Type'].dropna().unique().tolist()
-    selected_advisors = st.sidebar.multiselect("Filter by Advisor", advisors, default=advisors)
-    selected_types = st.sidebar.multiselect("Filter by Appointment Type", types, default=types)
-    df = df[df['Calendar'].isin(selected_advisors) & df['Type'].isin(selected_types)]
+    with st.expander("🔍 Filter Options"):
+        selected_advisors = st.multiselect("Filter by Advisor", advisors, default=advisors)
+        selected_types = st.multiselect("Filter by Appointment Type", types, default=types)
+
+    df = df[df['Calendar'].isin(selected_advisors) & df['Type'].isin(selected_types)].isin(selected_advisors) & df['Type'].isin(selected_types)]
 
     if show_data:
         with st.expander("📋 Preview Advising Data"):
@@ -51,9 +51,12 @@ if advising_file:
 
     st.markdown("---")
     st.subheader("📆 Appointments Over Time")
-    df['Month'] = df['Date Scheduled'].dt.to_period('M').astype(str)
-    month_counts = df['Month'].value_counts().sort_index()
-    st.bar_chart(month_counts)
+    if not df['Date Scheduled'].isna().all():
+        df['Month'] = df['Date Scheduled'].dt.to_period('M').astype(str)
+        month_counts = df['Month'].value_counts().sort_index()
+        st.bar_chart(month_counts)
+    else:
+        st.warning("No valid dates found after filtering. Please adjust filters or check data.")
 
     st.subheader("⏰ Appointments by Hour")
     df['Hour'] = df['Date Scheduled'].dt.hour
