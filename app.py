@@ -226,18 +226,6 @@ if workshop_file:
     st.markdown("### ✍️ Essay Progress and Support")
     st.subheader("📚 Writing Stage Breakdown")
 
-    st.subheader("🔻 Writing Stage Funnel")
-    stage_series = dfw['Writing Stage'].str.split(',').explode().str.strip()
-    funnel_counts = stage_series.value_counts().reindex([
-        'i am just getting started',
-        'i have brainstormed but not yet drafted',
-        'i have a draft',
-        'i am nearly done'
-    ]).fillna(0)
-    st.bar_chart(funnel_counts)
-    stage_counts = stage_series.value_counts()
-    st.bar_chart(stage_counts)
-
     st.markdown("### 🎓 Student Academic Backgrounds")
     st.subheader("🎓 Major Representation")
     major_counts = dfw['Current Major'].value_counts()
