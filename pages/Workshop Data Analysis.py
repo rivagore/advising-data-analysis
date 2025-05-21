@@ -8,8 +8,8 @@ from nltk.corpus import stopwords
 nltk.download('stopwords')
 default_stopwords = set(stopwords.words('english'))
 
-st.set_page_config(layout="wide", page_title="Advising & Workshop Dashboard")
-st.title("📊 Advising & Workshop Data Analysis Tool")
+st.set_page_config(layout="wide", page_title="Workshop Data Analysis")
+st.title("📊 Workshop Data Analysis Tool")
 
 st.sidebar.header("Upload Data Files")
 
