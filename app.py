@@ -26,19 +26,6 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-st.markdown("""
-    <style>
-        /* Target selected option 'tags' inside the multiselect dropdown */
-        div[data-baseweb="select"] span[data-baseweb="tag"] {
-            background-color: rgba(138, 43, 226, 0.2) !important;
-            color: #4B0082 !important;
-            font-weight: 600;
-        }
-    </style>
-""", unsafe_allow_html=True)
-
-
-
 from wordcloud import WordCloud
 import matplotlib.pyplot as plt
 import seaborn as sns
