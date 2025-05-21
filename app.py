@@ -50,6 +50,9 @@ matplotlib.use('Agg')
 
 if advising_file:
     st.markdown("## 📁 Advising Data Overview")
+    df = pd.read_csv(advising_file)
+    df['Date Scheduled'] = pd.to_datetime(df['Date Scheduled'], errors='coerce')
+    df['Full Name'] = df['First Name'].str.strip().str.lower() + ' ' + df['Last Name'].str.strip().str.lower()
 
     # Filters
     advisors = df['Calendar'].dropna().unique().tolist()
@@ -58,10 +61,6 @@ if advising_file:
         selected_advisors = st.multiselect("Filter by Advisor", advisors, default=advisors)
         selected_types = st.multiselect("Filter by Appointment Type", types, default=types)
 
-    st.markdown("### 🗂 Advising Data Analysis")
-    df = pd.read_csv(advising_file)
-    df['Date Scheduled'] = pd.to_datetime(df['Date Scheduled'], errors='coerce')
-    df['Full Name'] = df['First Name'].str.strip().str.lower() + ' ' + df['Last Name'].str.strip().str.lower()
 
     df = df[df['Calendar'].isin(selected_advisors) & df['Type'].isin(selected_types)]
 
@@ -94,6 +93,8 @@ if advising_file:
 
     df['Category'] = df['topic_clean'].apply(categorize)
 
+    st.markdown("### 🗂 Advising Data Analysis")
+    
     if show_data:
         with st.expander("📋 Preview Advising Data"):
             st.dataframe(df.head(), use_container_width=True)
