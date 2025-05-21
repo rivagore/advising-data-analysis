@@ -42,6 +42,35 @@ if advising_file:
 
     df = df[df['Calendar'].isin(selected_advisors) & df['Type'].isin(selected_types)]
 
+    df['topic_clean'] = (
+      df['What would you like to talk about?']
+          .astype(str)
+          .str.lower()
+          .str.replace(r'[^\w\s]', ' ', regex=True)
+          .str.replace(r'\s+', ' ', regex=True)
+          .str.strip()
+    )
+
+    category_keywords = {
+        "Internships":            ["internship", "internships", "practical experience", "recruitment"],
+        "Applications / Essays":  ["essay", "application", "apply", "personal statement", "application review"],
+        "Course Planning":        ["course", "registration", "class", "winter", "spring", "plan", "planning"],
+        "Resume / Career":        ["resume", "career", "job", "fair", "job searching"],
+        "Research":               ["research", "undergraduate research", "lab", "390r", "a i m s"],
+        "Admissions":             ["admission", "transfer", "undeclared", "paul allen", "allen school"],
+    }
+
+    def categorize(text):
+        if pd.isna(text):
+            return "Other"
+        for cat, kws in category_keywords.items():
+            for kw in kws:
+                if kw in text:
+                    return cat
+        return "Other"
+
+    df['Category'] = df['topic_clean'].apply(categorize)
+
     if show_data:
         with st.expander("📋 Preview Advising Data"):
             st.dataframe(df.head(), use_container_width=True)
@@ -111,22 +140,11 @@ if advising_file:
     else:
         st.warning("No valid dates found after filtering. Please adjust filters or check data.")
 
-    st.subheader("📅 Appointments by Day of Week")
-    df['Weekday'] = df['Date Scheduled'].dt.day_name()
-    weekday_counts = df['Weekday'].value_counts().reindex(['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'])
-    st.bar_chart(weekday_counts)
-
     st.subheader("📋 Appointments by Advisor and Category")
     if 'Category' in df.columns:
         advisor_category = pd.crosstab(index=df['Calendar'], columns=df['Category']).copy()
         advisor_category = advisor_category.loc[~advisor_category.index.duplicated(keep='first')]
         st.dataframe(advisor_category, use_container_width=True)
-
-    st.subheader("🧾 Monthly Load per Advisor")
-    advisor_month = pd.crosstab(index=df['Month'], columns=df['Calendar']).copy()
-    advisor_month = advisor_month.loc[~advisor_month.index.duplicated(keep='first')]
-    styled = advisor_month.style.highlight_max(axis=0, props="background-color: rgba(138, 43, 226, 0.2); font-weight: bold;")
-    st.dataframe(styled, use_container_width=True, hide_index=False)
 
     st.subheader("🔁 Frequency of Repeat Visits")
     repeat_freq = df['Student Number'].value_counts().value_counts().sort_index()
@@ -134,16 +152,16 @@ if advising_file:
     st.bar_chart(repeat_freq_df.set_index("Visits"))
 
     st.subheader("🧠 Most Frequent Words in Topics")
-if 'topic_clean' in df.columns:
-    words = ' '.join(df['topic_clean'].dropna()).split()
-    common_words = pd.Series(Counter(words)).value_counts().head(15)
-    common_words_df = common_words.rename_axis("word").reset_index(name="frequency")
-    st.dataframe(common_words_df, use_container_width=True)
-
-    fig, ax = plt.subplots(figsize=(10, 5))
-    sns.barplot(data=common_words_df, y="word", x="frequency", ax=ax, palette="Purples_d")
-    ax.set_title("Top 15 Words in Topics")
-    st.pyplot(fig)
+    if 'topic_clean' in df.columns:
+        words = ' '.join(df['topic_clean'].dropna()).split()
+        common_words = pd.Series(Counter(words)).value_counts().head(15)
+        common_words_df = common_words.rename_axis("word").reset_index(name="frequency")
+        st.dataframe(common_words_df, use_container_width=True)
+    
+        fig, ax = plt.subplots(figsize=(10, 5))
+        sns.barplot(data=common_words_df, y="word", x="frequency", ax=ax, palette="Purples_d")
+        ax.set_title("Top 15 Words in Topics")
+        st.pyplot(fig)
 
     st.subheader("📅 New vs Returning Students by Advisor")
     df['is_repeat'] = df.duplicated(subset='Student Number', keep=False)
@@ -164,14 +182,6 @@ if 'topic_clean' in df.columns:
         st.metric("Longest Gap", max_gap)
     else:
         st.info("Not enough repeat visits to calculate time gaps.")
-
-    
-    st.subheader("🧠 Most Frequent Words in Topics")
-    if 'topic_clean' in df.columns:
-        words = ' '.join(df['topic_clean'].dropna()).split()
-        common_words = pd.Series(Counter(words)).value_counts().head(15)
-        common_words_df = common_words.rename_axis("word").reset_index(name="frequency")
-        st.bar_chart(common_words_df.set_index("word"))
 
 if workshop_file:
     st.markdown("## 🧾 Workshop Data Overview")
