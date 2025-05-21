@@ -157,11 +157,7 @@ if advising_file:
         common_words = pd.Series(Counter(words)).value_counts().head(15)
         common_words_df = common_words.rename_axis("word").reset_index(name="frequency")
         st.dataframe(common_words_df, use_container_width=True)
-    
-        fig, ax = plt.subplots(figsize=(10, 5))
-        sns.barplot(data=common_words_df, y="word", x="frequency", ax=ax, palette="Purples_d")
-        ax.set_title("Top 15 Words in Topics")
-        st.pyplot(fig)
+        st.bar_chart(common_words_df.set_index("word"))
 
     st.subheader("📅 New vs Returning Students by Advisor")
     df['is_repeat'] = df.duplicated(subset='Student Number', keep=False)
