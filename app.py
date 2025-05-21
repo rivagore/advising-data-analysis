@@ -75,7 +75,7 @@ if advising_file:
 
     if 'topic_clean' in df.columns:
         st.markdown("### 🗣 Topic Content Insights")
-    st.subheader("🌥 Topic Word Cloud")
+        st.subheader("🌥 Topic Word Cloud")
         text = ' '.join(df['topic_clean'].dropna())
         wordcloud = WordCloud(width=800, height=400, background_color='white').generate(text)
         fig, ax = plt.subplots(figsize=(10, 5))
