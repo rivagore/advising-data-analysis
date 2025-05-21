@@ -31,7 +31,7 @@ if advising_file:
         selected_advisors = st.multiselect("Filter by Advisor", advisors, default=advisors)
         selected_types = st.multiselect("Filter by Appointment Type", types, default=types)
 
-    df = df[df['Calendar'].isin(selected_advisors) & df['Type'].isin(selected_types)].isin(selected_advisors) & df['Type'].isin(selected_types)]
+    df = df[df['Calendar'].isin(selected_advisors) & df['Type'].isin(selected_types)].isin(selected_advisors) & df['Type'].isin(selected_types)
 
     if show_data:
         with st.expander("📋 Preview Advising Data"):
