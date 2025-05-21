@@ -20,6 +20,12 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
+from wordcloud import WordCloud
+import matplotlib.pyplot as plt
+import seaborn as sns
+import matplotlib
+matplotlib.use('Agg')
+
 if advising_file:
     st.markdown("### 🗂 Advising Data Analysis")
     df = pd.read_csv(advising_file)
@@ -40,6 +46,45 @@ if advising_file:
             st.dataframe(df.head(), use_container_width=True)
 
     st.subheader("🔢 Summary Metrics")
+
+    st.subheader("🗓️ Appointments by Day of Week")
+    df['Weekday'] = df['Date Scheduled'].dt.day_name()
+    weekday_counts = df['Weekday'].value_counts().reindex(['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'])
+    st.bar_chart(weekday_counts)
+
+    st.subheader("📆 Advisor Monthly Heatmap")
+    heatmap_data = pd.crosstab(df['Month'], df['Calendar'])
+    fig, ax = plt.subplots(figsize=(10, 6))
+    sns.heatmap(heatmap_data, cmap="Purples", annot=True, fmt="d", linewidths=0.5, ax=ax)
+    st.pyplot(fig)
+
+    st.subheader("🧑‍🎓 Repeat Visitors Timeline")
+    timeline_df = df.copy()
+    timeline_df['Month'] = timeline_df['Date Scheduled'].dt.to_period('M').astype(str)
+    timeline_counts = timeline_df[timeline_df['Student Number'].duplicated(keep=False)].groupby('Month')['Student Number'].nunique()
+    st.line_chart(timeline_counts)
+
+    st.subheader("📊 First-time vs Repeat Students by Advisor")
+    repeat_flags = df.duplicated(subset='Student Number', keep=False)
+    df['Repeat Status'] = repeat_flags.map({True: 'Repeat', False: 'First-Time'})
+    grouped = df.groupby(['Calendar', 'Repeat Status']).size().unstack(fill_value=0)
+    st.dataframe(grouped, use_container_width=True)
+
+    st.subheader("🌥 Topic Word Cloud")
+    text = ' '.join(df['topic_clean'].dropna())
+    wordcloud = WordCloud(width=800, height=400, background_color='white').generate(text)
+    fig, ax = plt.subplots(figsize=(10, 5))
+    ax.imshow(wordcloud, interpolation='bilinear')
+    ax.axis('off')
+    st.pyplot(fig)
+
+    st.subheader("⏱️ Average Time Between Repeat Visits")
+    repeat_df = df[df['Student Number'].duplicated(keep=False)]
+    gaps = repeat_df.groupby('Student Number')['Date Scheduled'].agg(['min', 'max'])
+    gaps['Days Between'] = (gaps['max'] - gaps['min']).dt.days
+    st.write(f"Average gap: {gaps['Days Between'].mean():.1f} days")
+    st.write(f"Shortest gap: {gaps['Days Between'].min()} days")
+    st.write(f"Longest gap: {gaps['Days Between'].max()} days")
     total_appointments = len(df)
     unique_students = df['Student Number'].nunique()
     repeat_students = df['Student Number'].value_counts().gt(1).sum()
@@ -60,7 +105,11 @@ if advising_file:
     else:
         st.warning("No valid dates found after filtering. Please adjust filters or check data.")
 
-        
+    st.subheader("📅 Appointments by Day of Week")
+    df['Weekday'] = df['Date Scheduled'].dt.day_name()
+    weekday_counts = df['Weekday'].value_counts().reindex(['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'])
+    st.bar_chart(weekday_counts)
+
     st.subheader("📋 Appointments by Advisor and Category")
     if 'Category' in df.columns:
         advisor_category = pd.crosstab(index=df['Calendar'], columns=df['Category']).copy()
@@ -70,8 +119,6 @@ if advising_file:
     st.subheader("🧾 Monthly Load per Advisor")
     advisor_month = pd.crosstab(index=df['Month'], columns=df['Calendar']).copy()
     advisor_month = advisor_month.loc[~advisor_month.index.duplicated(keep='first')]
-
-    # Highlight max value in each column
     styled = advisor_month.style.highlight_max(axis=0, props="background-color: rgba(138, 43, 226, 0.2); font-weight: bold;")
     st.dataframe(styled, use_container_width=True, hide_index=False)
 
@@ -79,6 +126,33 @@ if advising_file:
     repeat_freq = df['Student Number'].value_counts().value_counts().sort_index()
     repeat_freq_df = repeat_freq.rename_axis("Visits").reset_index(name="Student Count")
     st.bar_chart(repeat_freq_df.set_index("Visits"))
+
+    st.subheader("🧠 Most Frequent Words in Topics")
+    if 'topic_clean' in df.columns:
+        words = ' '.join(df['topic_clean'].dropna()).split()
+        common_words = pd.Series(Counter(words)).value_counts().head(15)
+        common_words_df = common_words.rename_axis("word").reset_index(name="frequency")
+        st.bar_chart(common_words_df.set_index("word"))
+
+    st.subheader("📅 New vs Returning Students by Advisor")
+    df['is_repeat'] = df.duplicated(subset='Student Number', keep=False)
+    new_vs_repeat = pd.crosstab(df['Calendar'], df['is_repeat'])
+    st.bar_chart(new_vs_repeat)
+
+    st.subheader("🧪 Average Time Between Repeat Visits")
+    df_sorted = df.sort_values(['Student Number', 'Date Scheduled'])
+    repeat_intervals = df_sorted[df_sorted.duplicated(subset='Student Number', keep=False)]
+    time_gaps = repeat_intervals.groupby('Student Number')['Date Scheduled'].agg(['min', 'max'])
+    time_gaps['days_between'] = (time_gaps['max'] - time_gaps['min']).dt.days
+    if not time_gaps.empty:
+        avg_gap = int(time_gaps['days_between'].mean())
+        min_gap = int(time_gaps['days_between'].min())
+        max_gap = int(time_gaps['days_between'].max())
+        st.metric("Average Gap (Days)", avg_gap)
+        st.metric("Shortest Gap", min_gap)
+        st.metric("Longest Gap", max_gap)
+    else:
+        st.info("Not enough repeat visits to calculate time gaps.")
 
     
     st.subheader("🧠 Most Frequent Words in Topics")
@@ -119,6 +193,15 @@ if workshop_file:
 
     st.markdown("---")
     st.subheader("📚 Writing Stage Breakdown")
+
+    st.subheader("🔻 Writing Stage Funnel")
+    funnel_counts = stage_series.value_counts().reindex([
+        'i am just getting started',
+        'i have brainstormed but not yet drafted',
+        'i have a draft',
+        'i am nearly done'
+    ]).fillna(0)
+    st.bar_chart(funnel_counts)
     stage_series = dfw['Writing Stage'].str.split(',').explode().str.strip()
     stage_counts = stage_series.value_counts()
     st.bar_chart(stage_counts)
