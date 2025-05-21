@@ -60,13 +60,6 @@ if advising_file:
     else:
         st.warning("No valid dates found after filtering. Please adjust filters or check data.")
 
-    st.subheader("⏰ Appointments by Hour")
-    df['Hour'] = df['Date Scheduled'].dt.hour
-    st.bar_chart(df['Hour'].value_counts().sort_index())
-
-    st.subheader("📊 Type of Appointments")
-    st.bar_chart(type_counts)
-
     st.subheader("📋 Appointments by Advisor and Category")
     if 'Category' in df.columns:
         advisor_category = pd.crosstab(index=df['Calendar'], columns=df['Category']).copy()
