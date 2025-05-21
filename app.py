@@ -241,12 +241,5 @@ if workshop_file:
     stage_vs_applied = pd.crosstab(exploded_df['Writing_Stage'], exploded_df['Applied Before'])
     st.dataframe(stage_vs_applied.copy(), use_container_width=True)
 
-    st.markdown("### 📆 Rescheduling Behavior")
-    st.subheader("⏳ Time Between Scheduling and Rescheduling")
-    dfw['Days Rescheduled'] = (dfw['Date Rescheduled'] - dfw['Date Scheduled']).dt.days
-    lead_time_dist = dfw['Days Rescheduled'].dropna()
-    lead_time_df = lead_time_dist.value_counts().sort_index().rename_axis("days").reset_index(name="count")
-    st.bar_chart(lead_time_df.set_index("days"))
-
 st.markdown("---")
 st.caption("Built with ❤️ using Streamlit")
