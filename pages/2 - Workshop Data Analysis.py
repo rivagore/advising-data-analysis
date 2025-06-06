@@ -65,10 +65,26 @@ if workshop_file:
     st.markdown("### ✍️ Essay Progress and Support")
     st.subheader("📚 Writing Stage Breakdown")
 
+    # st.markdown("### 🎓 Student Academic Backgrounds")
+    # st.subheader("🎓 Major Representation")
+    # major_counts = dfw['Current Major'].value_counts()
+    # st.bar_chart(major_counts)
     st.markdown("### 🎓 Student Academic Backgrounds")
     st.subheader("🎓 Major Representation")
+
+    # Normalize major names
+    dfw['Current Major'] = dfw['Current Major'].str.lower().str.strip()
+    dfw['Current Major'] = dfw['Current Major'].replace(
+        to_replace=r'(pre[\s\-]?sciences|presciences|premajor)', value='Pre-Sciences', regex=True
+    )
+    dfw['Current Major'] = dfw['Current Major'].str.title()
+
+    # Generate pie chart for major distribution
     major_counts = dfw['Current Major'].value_counts()
-    st.bar_chart(major_counts)
+    fig, ax = plt.subplots()
+    ax.pie(major_counts, labels=major_counts.index, autopct='%1.1f%%', startangle=90, colors=plt.cm.Purples_r(range(len(major_counts))))
+    ax.axis('equal')
+    st.pyplot(fig)
 
     st.markdown("### 📝 Writing Stage vs. Allen School Application")
     st.subheader("📊 Writing Stage vs Application Status")
@@ -81,4 +97,5 @@ if workshop_file:
     st.dataframe(stage_vs_applied.copy(), use_container_width=True)
 
 st.markdown("---")
-st.caption("Built with ❤️ using Streamlit")
+st.markdown("Made with 💜 by [Riva Gore](https://www.linkedin.com/in/rivagore/)", unsafe_allow_html=True)
+

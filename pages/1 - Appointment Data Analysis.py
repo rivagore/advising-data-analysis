@@ -142,3 +142,6 @@ if advising_file:
     common_words = pd.DataFrame(word_counts.most_common(15), columns=["Word", "Frequency"])
     st.bar_chart(common_words.set_index("Word"), color="#8a2be2")
     st.dataframe(common_words, use_container_width=True)
+
+st.markdown("---")
+st.markdown("Made with 💜 by [Riva Gore](https://www.linkedin.com/in/rivagore/)", unsafe_allow_html=True)

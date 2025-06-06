@@ -27,3 +27,6 @@ Step-by-step guide on how to use all the filters, interpret charts, and export i
 
 Use the sidebar to begin exploring!
 """)
+
+st.markdown("---")
+st.markdown("Made with 💜 by [Riva Gore](https://www.linkedin.com/in/rivagore/)", unsafe_allow_html=True)

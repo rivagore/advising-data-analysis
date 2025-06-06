@@ -53,3 +53,6 @@ This page shows data from workshop submissions.
 
 Need help? Reach out to your project maintainer or Streamlit support.
 """)
+
+st.markdown("---")
+st.markdown("Made with 💜 by [Riva Gore](https://www.linkedin.com/in/rivagore/)", unsafe_allow_html=True)
